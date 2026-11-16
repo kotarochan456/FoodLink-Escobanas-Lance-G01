@@ -1,0 +1,6 @@
+{% extends 'base.html' %}{% block content %}<p class="eyebrow">Admin dashboard</p><h1>Welcome, {{ user.first_name }}!</h1>
+<section><h2>Account overview</h2><p>Donors: <strong>{{ donor_count }}</strong></p><p>Recipients: <strong>{{ recipient_count }}</strong></p><p>Awaiting account preference: <strong>{{ pending_count }}</strong></p><p>Active accounts: <strong>{{ active_count }}</strong></p></section>
+<section><h2>Administration</h2><p><a href="{% url 'manage_roles' %}">Manage user roles</a></p>
+{% if user.is_staff %}<p><a href="{% url 'admin:accounts_user_changelist' %}">Advanced account administration</a></p>{% endif %}
+<p><a href="{% url 'profile' %}">View my profile</a> · <a href="{% url 'profile_edit' %}">Edit my profile</a></p>
+<p>Administrative account management is separate from personal profile access.</p></section>{% endblock %}

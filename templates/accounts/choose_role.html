@@ -1,0 +1,7 @@
+{% extends 'base.html' %}{% block content %}<h1>Choose your account preference</h1>
+<p>Your existing account is safe. FoodLink now uses Donor and Recipient accounts. You must choose one before continuing.</p>
+<ul><li><strong>Donor:</strong> share surplus food and manage your listings in later phases.</li>
+<li><strong>Recipient:</strong> browse available food and manage reservations in later phases.</li></ul>
+<p>This choice is required and cannot be changed through your profile. Admin access is assigned by an existing Admin.</p>
+<form method="post" class="account-form">{% csrf_token %}{{ form.as_p }}<button>Save and continue</button></form>
+{% endblock %}

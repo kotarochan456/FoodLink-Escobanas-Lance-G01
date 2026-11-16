@@ -1,0 +1,6 @@
+{% extends 'base.html' %}{% block content %}<p class="eyebrow">Recipient dashboard</p>
+<h1>Welcome, {{ user.first_name }}!</h1>
+<section><h2>Your account</h2><p>{{ user.get_full_name }} · {{ user.email }}</p><p>Location: {{ user.location }}</p>
+<a href="{% url 'profile' %}">View profile</a> · <a href="{% url 'profile_edit' %}">Update contact details</a></section>
+<section><h2>Receiving food</h2><p>Browse available food and manage your food reservations.</p>
+<p>These food-sharing features are planned for later phases and are not available in this Account Feature submission.</p></section>{% endblock %}

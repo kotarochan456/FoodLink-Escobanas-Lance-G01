@@ -1,0 +1,3 @@
+{% extends 'base.html' %}{% block content %}<h1>Log in to FoodLink</h1><p>Use your username or email address.</p>
+<form method="post" class="account-form">{% csrf_token %}{{ form.as_p }}<button>Log in</button></form>
+<p>New to FoodLink? <a href="{% url 'register' %}">Create an account</a></p>{% endblock %}

@@ -1,0 +1,5 @@
+{% extends 'base.html' %}{% block content %}<p class="eyebrow">Member dashboard</p><h1>Welcome, {{ user.first_name }}!</h1>
+<p>Your community account lets you share surplus food and reserve food when those features are added.</p>
+<section><h2>Your account</h2><p>{{ user.get_full_name }} · {{ user.email }}</p><p>Location: {{ user.location }}</p>
+<a href="{% url 'profile' %}">View profile</a> · <a href="{% url 'profile_edit' %}">Update contact details</a></section>
+<section><h2>Food sharing</h2><p>Food listings, reservations, history and notifications are planned for later development phases. They are not available in this Account Feature submission.</p></section>{% endblock %}

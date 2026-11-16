@@ -1,0 +1,17 @@
+{% extends 'base.html' %}{% block content %}
+<h1>Manage user roles</h1>
+<p>Users choose Donor or Recipient during registration. Only an Admin can promote an active Donor or Recipient to Admin.</p>
+<p>Promoted Admins can access the Admin dashboard and promote other users.</p>
+{% for account in page_obj %}
+<section><h2>{{ account.username }}</h2><p>{{ account.get_full_name }}</p>
+<p>Role: <strong>{{ account.get_role_display|default:"Awaiting choice" }}</strong> · {% if account.is_active %}Active{% else %}Inactive{% endif %}</p>
+{% if account.role == 'DONOR' and account.is_active or account.role == 'RECIPIENT' and account.is_active %}
+<a href="{% url 'promote_user' account.pk %}">Make Admin</a>
+{% elif account.role == 'ADMIN' %}<p>Already an Admin</p>{% elif not account.role %}<p>This user must first sign in and choose Donor or Recipient.</p>{% else %}<p>Inactive accounts cannot be promoted.</p>{% endif %}
+</section>{% empty %}<p>No accounts found.</p>{% endfor %}
+<nav aria-label="Account pages">
+{% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}">Previous</a>{% endif %}
+<span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+{% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}">Next</a>{% endif %}
+</nav><p><a href="{% url 'admin_dashboard' %}">Back to Admin dashboard</a></p>
+{% endblock %}
