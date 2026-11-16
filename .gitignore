@@ -1,6 +1,18 @@
-.venv/
+# Secrets
 .env
+.env.*
+!.env.example
+
+# Virtual environments
+.venv/
+venv/
+
+# Python-generated files
 __pycache__/
-*.pyc
+*.py[cod]
+
+# Generated static files
 staticfiles/
-.vscode/
+
+# Local account-data backup
+foodlink_before_role_update.json
