@@ -1,19 +1,30 @@
-# Verification — Bootstrap hybrid UI update
+# PD2 verification
 
-Passed in this workspace:
+Verified on 2026-11-18 with Python 3.12, Django 5.2.19 and disposable PostgreSQL 16.2.
 
-- 30 database-independent Python tests: 22 existing account/role checks plus 8 UI rendering checks.
-- JavaScript theme checks using Node's standard library: initial device setting, saved preference priority, toggle behavior, refresh persistence, unavailable storage, invalid saved values, device preference changes, cross-tab updates and accessible button labels.
-- Django system checks: no issues.
-- Model/migration comparison: no changes detected. The database migration-history connection was unavailable.
+- 69 Django tests pass: existing accounts, actual legacy-role migration, registration, username/email login, logout, profile ownership, role isolation, promotion, UI rendering and food-listing functionality.
+- Listing tests exercise create/read/update/delete via HTTP views with persisted PostgreSQL data, owner-ID spoofing, cross-owner URL access, Recipient read-only restrictions, Admin moderation without staff access, required fields, quantity/date/status validation, expiry/scheduled/completed filtering, inactive owners, CSRF, escaping, search and pagination.
+- `manage.py check` passes; `makemigrations --check --dry-run` reports no changes.
+- Migrations and a saved listing were verified in a separate PostgreSQL database's private `foodlink` schema. All three optional demo accounts logged in successfully there.
+- Existing Node theme checks pass. Node is optional and is not a runtime dependency.
 
-UI checks verify Bootstrap CDN includes, CSRF fields, required unselected public-role radios, preserved radio choice, form error associations, role-specific promotion links, dashboards/profiles/error templates and themed Django admin login. They are server-rendering checks, not browser screenshots.
+## Limits
 
-Bootstrap 5.3.9 CDN URLs and SRI values were taken from the official introduction documentation. The delivery includes no React dependencies, no frontend build and no account credential files.
+The supplied Supabase project was not accessed or changed. Browser screenshot capture was blocked by the execution environment's browser socket restriction; visual browser/mobile checks and report screenshots must be completed locally. No remote branches were pushed or PRs merged because GitHub write access was not connected. These are submission tasks, not completed claims.
 
-Not verified here:
+Run the full suite ONLY against a disposable PostgreSQL server with permission to create and drop test databases. Use README instructions; do not point the test suite at your live Supabase pooler. The normal application remains configured for Supabase using your private `.env`.
 
-- Browser visual inspection: Chromium could not start because the workspace blocks its local socket creation.
-- 23 PostgreSQL integration tests: still included, not run here due to the same local socket restriction. Do not run these against the live Supabase project.
+## Manual acceptance flow
 
-The user has confirmed migration 0002 succeeded on their local Supabase-connected installation. This UI update adds no model changes or migrations. Existing registration, role selection, session authentication, private profiles and promotion authorization are retained. Use UPDATE_INSTRUCTIONS.md for local visual and workflow checks before submission.
+1. Register one Donor and one Recipient. Confirm required fields, duplicate username/email and mismatched password errors.
+2. Log in by username and email. Confirm role routing and POST logout.
+3. Update your profile and confirm another user's profile cannot be selected.
+4. Donor: Share food; try quantity 0 and expiry before availability. Confirm validation errors and no record creation.
+5. Save valid food. Confirm success, detail, and My listings. Edit it and refresh to confirm persistence.
+6. Recipient: search for that food and view details. Direct create/edit/delete attempts must fail.
+7. A second Donor must not see/edit/delete the first Donor's listing by URL.
+8. Admin: manage all listings. Mark one Completed; Recipient must no longer see or open it.
+9. Donor: create another listing; cancel deletion once, then confirm deletion. Verify it is gone after refresh.
+10. Test scheduled and expired listings, light/dark modes, mobile navigation, and legacy mandatory role choice.
+
+Capture labeled screenshots during steps 1, 4, 5, 6, 8 and 9 for the report. Use demo food and test accounts only.

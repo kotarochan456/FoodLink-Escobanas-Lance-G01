@@ -26,3 +26,9 @@ class FoodListingForm(forms.ModelForm):
         if data.get('status') == FoodListing.Status.AVAILABLE and expiry and expiry <= timezone.now():
             self.add_error('expires_at', 'An available listing must have an expiry in the future.')
         return data
+
+
+class ListingFilterForm(forms.Form):
+    q = forms.CharField(label='Food or description', max_length=150, required=False)
+    category = forms.ChoiceField(choices=[('', 'All categories')] + list(FoodListing.Category.choices), required=False)
+    location = forms.CharField(label='Pickup location', max_length=200, required=False)

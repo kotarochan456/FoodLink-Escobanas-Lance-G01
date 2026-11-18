@@ -2,11 +2,12 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.core.paginator import Paginator
+from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.cache import never_cache
 from django.views.decorators.http import require_http_methods
 from accounts.models import User
-from .forms import FoodListingForm
+from .forms import FoodListingForm, ListingFilterForm
 from .models import FoodListing
 
 
@@ -31,8 +32,23 @@ def editable_listing(user, pk):
 @login_required
 @require_http_methods(['GET'])
 def listing_list(request):
-    page = Paginator(visible_listings(request.user), 12).get_page(request.GET.get('page'))
-    return render(request, 'listings/list.html', {'page_obj': page})
+    listings = visible_listings(request.user)
+    form = ListingFilterForm(request.GET)
+    if form.is_valid():
+        query = form.cleaned_data['q']
+        if query:
+            listings = listings.filter(Q(name__icontains=query) | Q(description__icontains=query))
+        if form.cleaned_data['category']:
+            listings = listings.filter(category=form.cleaned_data['category'])
+        if form.cleaned_data['location']:
+            listings = listings.filter(pickup_location__icontains=form.cleaned_data['location'])
+    else:
+        listings = listings.none()
+    page = Paginator(listings, 12).get_page(request.GET.get('page'))
+    parameters = request.GET.copy()
+    parameters.pop('page', None)
+    return render(request, 'listings/list.html', {'page_obj': page, 'filter_form': form,
+                                                'filter_query': parameters.urlencode()})
 
 
 @never_cache

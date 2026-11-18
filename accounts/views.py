@@ -12,6 +12,7 @@ from django.views.decorators.cache import never_cache
 from django.views.decorators.http import require_http_methods
 from .forms import RegistrationForm, ProfileForm, LoginForm, RoleChoiceForm
 from .models import User
+from listings.models import FoodListing
 
 @require_http_methods(['GET', 'POST'])
 def register(request):
@@ -74,11 +75,16 @@ def dashboard(request):
 
 @role_required(User.Role.DONOR)
 def donor_dashboard(request):
-    return render(request, 'accounts/donor_dashboard.html')
+    return render(request, 'accounts/donor_dashboard.html', {
+        'listing_count': FoodListing.objects.filter(donor=request.user).count(),
+        'available_count': FoodListing.objects.filter(donor=request.user).available().count(),
+    })
 
 @role_required(User.Role.RECIPIENT)
 def recipient_dashboard(request):
-    return render(request, 'accounts/recipient_dashboard.html')
+    return render(request, 'accounts/recipient_dashboard.html', {
+        'available_count': FoodListing.objects.available().count(),
+    })
 
 @never_cache
 @login_required
@@ -100,6 +106,7 @@ def choose_role(request):
 @role_required(User.Role.ADMIN)
 def admin_dashboard(request):
     return render(request, 'accounts/admin_dashboard.html', {
+        'listing_count': FoodListing.objects.count(),
         'donor_count': User.objects.filter(role=User.Role.DONOR).count(),
         'recipient_count': User.objects.filter(role=User.Role.RECIPIENT).count(),
         'pending_count': User.objects.filter(role__isnull=True).count(),

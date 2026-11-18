@@ -132,3 +132,45 @@ class ListingTests(TestCase):
         response=self.client.get(self.url('detail'))
         self.assertContains(response,'&lt;script&gt;')
         self.assertNotContains(response,'<script>alert(1)</script>')
+
+    def test_search_filters_preserve_role_visibility(self):
+        FoodListing.objects.create(donor=self.other, **self.data(name='Banana bread',category='BAKERY'))
+        self.client.force_login(self.recipient)
+        response=self.client.get(self.url('list'),{'q':'banana','category':'BAKERY','location':'hall'})
+        self.assertContains(response,'Banana bread');self.assertNotContains(response,'Vegetable meals')
+        self.client.force_login(self.donor)
+        self.assertNotContains(self.client.get(self.url('list'),{'q':'banana'}),'Banana bread')
+        response=self.client.get(self.url('list'),{'category':'INVALID'})
+        self.assertIn('category',response.context['filter_form'].errors)
+        self.assertEqual(response.context['page_obj'].paginator.count,0)
+
+    def test_pagination_keeps_filters(self):
+        for i in range(13):
+            FoodListing.objects.create(donor=self.donor, **self.data(name=f'Meal {i}'))
+        self.client.force_login(self.recipient)
+        response=self.client.get(self.url('list'),{'q':'Meal','page':2})
+        self.assertEqual(response.context['page_obj'].number,2)
+        self.assertContains(response,'q=Meal&amp;page=1')
+
+    def test_dashboard_counts_and_role_actions(self):
+        for user, route, text in [(self.donor,'donor_dashboard','Share food'),
+            (self.recipient,'recipient_dashboard','Browse food'),(self.admin,'admin_dashboard','Manage food listings')]:
+            self.client.force_login(user)
+            response=self.client.get(reverse(route))
+            self.assertContains(response,text)
+            self.assertContains(response,reverse('listings:list'))
+
+    def test_demo_account_command_is_explicit_and_never_overwrites(self):
+        from io import StringIO
+        from unittest.mock import patch
+        from django.core.management import call_command
+        from django.core.management.base import CommandError
+        with self.settings(DEBUG=False), self.assertRaises(CommandError):
+            call_command('create_demo_accounts',noinput=True)
+        with self.settings(DEBUG=True), patch.dict('os.environ',{'FOODLINK_DEMO_PASSWORD':'Demo-Test-Only-7291!'}):
+            call_command('create_demo_accounts',noinput=True,stdout=StringIO())
+            account=User.objects.get(username='pd2_admin')
+            self.assertEqual(account.role,'ADMIN');self.assertFalse(account.is_staff or account.is_superuser)
+            self.assertTrue(account.check_password('Demo-Test-Only-7291!'))
+            with self.assertRaises(CommandError):
+                call_command('create_demo_accounts',noinput=True)
