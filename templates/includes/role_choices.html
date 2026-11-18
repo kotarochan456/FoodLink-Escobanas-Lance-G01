@@ -1,0 +1,7 @@
+<fieldset class="role-fieldset"><legend class="form-label">Account preference <span class="required-mark" aria-hidden="true">*</span></legend>
+<p class="form-text mt-0" id="role-help">Choose how you would like to take part.</p><div class="row g-3">
+<div class="col-sm-6"><label class="role-option" for="role-donor"><input class="form-check-input" type="radio" name="role" value="DONOR" id="role-donor" required {% if form.role.value == 'DONOR' %}checked{% endif %} aria-describedby="role-help{% if form.role.errors %} role-errors{% endif %}" {% if form.role.errors %}aria-invalid="true"{% endif %}>
+<span class="role-icon">{% include 'includes/icon.html' with name='gift' %}</span><strong>Donor</strong><span class="muted small">I want to share surplus food.</span></label></div>
+<div class="col-sm-6"><label class="role-option" for="role-recipient"><input class="form-check-input" type="radio" name="role" value="RECIPIENT" id="role-recipient" required {% if form.role.value == 'RECIPIENT' %}checked{% endif %} aria-describedby="role-help{% if form.role.errors %} role-errors{% endif %}" {% if form.role.errors %}aria-invalid="true"{% endif %}>
+<span class="role-icon">{% include 'includes/icon.html' with name='heart' %}</span><strong>Recipient</strong><span class="muted small">I want to receive shared food.</span></label></div></div>
+{% if form.role.errors %}<div class="invalid-feedback d-block" id="role-errors">{% for error in form.role.errors %}<div>{{ error }}</div>{% endfor %}</div>{% endif %}</fieldset>

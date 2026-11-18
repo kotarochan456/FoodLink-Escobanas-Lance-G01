@@ -1,7 +1,8 @@
 from django.contrib import admin
-from django.urls import path
+from django.urls import include, path
 from accounts import views
 urlpatterns = [
+    path('food/', include('listings.urls')),
     path('', views.dashboard, name='dashboard'),
     path('accounts/register/', views.register, name='register'),
     path('accounts/login/', views.AccountLoginView.as_view(), name='login'),

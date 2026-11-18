@@ -1,3 +1,6 @@
-{% extends 'base.html' %}{% block content %}<h1>{{ title }}</h1>
-<p>All fields are required.</p><form method="post" class="account-form">{% csrf_token %}{{ form.as_p }}<button>{{ button }}</button></form>
-{% if user.is_authenticated %}<p><a href="{% url 'profile' %}">Cancel</a></p>{% else %}<p>Already registered? <a href="{% url 'login' %}">Log in</a></p>{% endif %}{% endblock %}
+{% extends 'base.html' %}{% block title %}{{ title }} · FoodLink{% endblock %}{% block content %}
+<div class="form-page mx-auto"><div class="page-heading"><span class="eyebrow">{% if user.is_authenticated %}ACCOUNT SETTINGS{% else %}A PLACE FOR EVERYONE{% endif %}</span><h1>{{ title }}</h1><p class="muted">{% if user.is_authenticated %}Keep your details up to date. Your role is managed separately.{% else %}Start with your details and choose how you want to participate.{% endif %}</p></div>
+<section class="panel"><form method="post">{% csrf_token %}{% include 'includes/form_errors.html' %}<p class="small muted mb-4">All fields are required.</p>
+<div class="row gx-4">{% for field in form %}{% if field.name != 'role' %}<div class="{% if field.name == 'location' %}col-12{% else %}col-md-6{% endif %}">{% include 'includes/field.html' %}</div>{% endif %}{% endfor %}</div>
+{% if form.role %}<div class="form-divider"></div>{% include 'includes/role_choices.html' %}{% endif %}
+<div class="d-flex flex-wrap align-items-center gap-3 mt-4"><button class="btn btn-primary" type="submit">{{ button }} {% include 'includes/icon.html' with name='arrow' %}</button>{% if user.is_authenticated %}<a class="btn btn-outline-secondary" href="{% url 'profile' %}">Cancel</a>{% else %}<span class="muted small">Already registered? <a href="{% url 'login' %}">Log in</a></span>{% endif %}</div></form></section></div>{% endblock %}

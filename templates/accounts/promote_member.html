@@ -1,7 +1,5 @@
-{% extends 'base.html' %}{% block content %}<h1>Make account an Admin</h1>
+{% extends 'base.html' %}{% block title %}Confirm promotion · FoodLink{% endblock %}{% block content %}<div class="compact-page mx-auto"><a class="back-link" href="{% url 'manage_roles' %}">← Back to user roles</a><section class="panel confirmation-panel"><span class="tile-icon icon-large">{% include 'includes/icon.html' with name='shield' %}</span><span class="eyebrow d-block mt-4">ACCOUNT PERMISSIONS</span><h1 class="h2 mt-2">Make account an Admin</h1>
 {% if target_account.role == 'DONOR' and target_account.is_active or target_account.role == 'RECIPIENT' and target_account.is_active %}
-<p>Promote <strong>{{ target_account.username }}</strong> ({{ target_account.get_full_name }}) from {{ target_account.get_role_display }} to Admin?</p>
-<p>This account will be able to access the Admin dashboard and promote other Donors or Recipients to Admin.</p>
-<form method="post">{% csrf_token %}<button type="submit">Confirm promotion</button></form>
-{% else %}<p>This account is already an Admin, inactive, or awaiting its account preference. It cannot be promoted.</p>{% endif %}
-<p><a href="{% url 'manage_roles' %}">Back to user roles</a></p>{% endblock %}
+<p class="muted">You’re updating the role for the account below.</p><div class="identity-block"><strong>{{ target_account.get_full_name }}</strong><span class="d-block muted">@{{ target_account.username }}</span><div class="d-flex gap-3 align-items-center mt-3"><span class="role-badge">{{ target_account.get_role_display }}</span>{% include 'includes/icon.html' with name='arrow' %}<span class="role-badge">Admin</span></div></div>
+<p class="muted mt-4">This account will be able to access the Admin dashboard and promote other Donors or Recipients to Admin.</p><form method="post" class="d-flex flex-wrap gap-3 mt-4">{% csrf_token %}<button class="btn btn-primary">Confirm promotion</button><a class="btn btn-outline-secondary" href="{% url 'manage_roles' %}">Cancel</a></form>
+{% else %}<p class="muted">This account is already an Admin, inactive, or awaiting its account preference. It cannot be promoted.</p><a class="btn btn-outline-primary" href="{% url 'manage_roles' %}">Back to user roles</a>{% endif %}</section></div>{% endblock %}

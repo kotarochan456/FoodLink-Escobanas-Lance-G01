@@ -1,7 +1,5 @@
-{% extends 'base.html' %}{% block content %}<h1>Choose your account preference</h1>
-<p>Your existing account is safe. FoodLink now uses Donor and Recipient accounts. You must choose one before continuing.</p>
-<ul><li><strong>Donor:</strong> share surplus food and manage your listings in later phases.</li>
-<li><strong>Recipient:</strong> browse available food and manage reservations in later phases.</li></ul>
-<p>This choice is required and cannot be changed through your profile. Admin access is assigned by an existing Admin.</p>
-<form method="post" class="account-form">{% csrf_token %}{{ form.as_p }}<button>Save and continue</button></form>
-{% endblock %}
+{% extends 'base.html' %}{% block title %}Choose your role · FoodLink{% endblock %}{% block content %}
+<div class="form-page compact-page mx-auto"><div class="page-heading text-center"><span class="eyebrow">ONE CHOICE. YOUR NEXT CHAPTER.</span><h1>Choose your account preference</h1><p class="muted">Welcome back, {{ user.first_name }}. Your existing account is safe.<br>You must choose one before continuing.</p></div>
+<section class="panel"><form method="post">{% csrf_token %}{% include 'includes/form_errors.html' %}{% include 'includes/role_choices.html' %}
+<p class="form-text mt-4">Donors will share food and manage listings. Recipients will browse and reserve food. These food-sharing features will arrive in later phases.</p>
+<p class="form-text">This choice cannot be changed through your profile. Admin access is assigned by an existing Admin.</p><button class="btn btn-primary w-100 mt-3">Save and continue {% include 'includes/icon.html' with name='arrow' %}</button></form></section></div>{% endblock %}

@@ -1,10 +1,14 @@
-# FoodLink — Account Feature (Donor, Recipient and Admin)
+# FoodLink — Hybrid UI and Account Feature
 
-Full-stack Django: Python, Django templates, local HTML/CSS, and Supabase PostgreSQL. No React and no SQLite. Django handles authentication and sessions; Supabase is the database provider.
+Full-stack Django: Python, Django templates, Bootstrap 5.3.9 via CDN, local HTML/CSS and vanilla JavaScript, and Supabase PostgreSQL. No React and no SQLite. Django handles authentication and sessions; Supabase is the database provider.
 
 ## Already running the previous version?
 
-Follow **UPDATE_INSTRUCTIONS.md** from start to finish. Keep your original `.env` and `.venv`. Copy the four updated source folders, then run `python manage.py migrate` before starting the updated server. This update includes migration 0002.
+Follow **UPDATE_INSTRUCTIONS.md** for the UI update. Keep `.env`, `.venv` and your existing database. If you already applied role migration 0002, no additional migration is needed. For older Member-role installations, follow **ROLE_MIGRATION_GUIDE.md** first.
+
+## Interface
+
+Hybrid glass accents and solid form/table surfaces, black-to-blue shading, responsive Bootstrap layout and a persistent dark/light toggle. The initial theme follows the device preference. Internet access is needed for CDN assets. No React or frontend build. Advanced Django administration uses the same color palette and toggle while retaining native controls.
 
 ## Implemented behavior
 
@@ -108,10 +112,10 @@ Safe checks without database mutations (requires a configured secret):
 
 ```bat
 python manage.py check
-python manage.py test accounts.test_without_database --verbosity 1
+python manage.py test accounts.test_without_database accounts.test_ui --verbosity 1
 ```
 
-The 22 database-independent tests check forms, roles, middleware, hashing, templates, CSRF and mocked database behavior. See VERIFICATION.md for the limits of these checks.
+The 30 database-independent tests check forms, roles, middleware, hashing, template rendering, UI controls, CSRF and mocked database behavior. Optional theme behavior checks use `node scripts/test_theme.cjs`; Node is not required to run FoodLink. See VERIFICATION.md for the limits of these checks.
 
 Run the 23 database-backed tests ONLY against a separate disposable PostgreSQL server with a role permitted to create test databases. Never point the full suite at live Supabase. Django creates and drops a test database; pooler permissions may prevent that. One test explicitly applies and reverses the role migration within the disposable test database.
 
@@ -141,7 +145,10 @@ Open a new terminal afterwards to return to `.env` Supabase settings. Environmen
 - `accounts/migrations/0002_donor_recipient_roles.py`: preserves accounts, resets only legacy MEMBER role to NULL, updates role choices/constraint.
 - `config/settings.py`: environment settings, PostgreSQL and middleware.
 - `config/urls.py`: named routes.
-- `templates/` and `static/`: Django frontend and local CSS.
+- `accounts/templatetags/ui.py`: Bootstrap field rendering with accessible error descriptions.
+- `templates/` and `static/`: Django frontend, Bootstrap CDN includes, CSS and vanilla theme/navigation scripts.
+- `templates/admin/`: themed native Django administration.
+- `accounts/test_ui.py`: database-independent UI rendering tests.
 
 ## Troubleshooting
 
@@ -162,3 +169,5 @@ Official references used for the original setup:
 - https://docs.djangoproject.com/en/5.2/topics/auth/customizing/
 - https://docs.djangoproject.com/en/5.2/topics/auth/default/
 - https://supabase.com/docs/guides/database/connecting-to-postgres
+
+Bootstrap reference: https://getbootstrap.com/docs/5.3/getting-started/introduction/
