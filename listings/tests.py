@@ -159,3 +159,18 @@ class ListingTests(TestCase):
             response=self.client.get(reverse(route))
             self.assertContains(response,text)
             self.assertContains(response,reverse('listings:list'))
+
+    def test_demo_account_command_is_explicit_and_never_overwrites(self):
+        from io import StringIO
+        from unittest.mock import patch
+        from django.core.management import call_command
+        from django.core.management.base import CommandError
+        with self.settings(DEBUG=False), self.assertRaises(CommandError):
+            call_command('create_demo_accounts',noinput=True)
+        with self.settings(DEBUG=True), patch.dict('os.environ',{'FOODLINK_DEMO_PASSWORD':'Demo-Test-Only-7291!'}):
+            call_command('create_demo_accounts',noinput=True,stdout=StringIO())
+            account=User.objects.get(username='pd2_admin')
+            self.assertEqual(account.role,'ADMIN');self.assertFalse(account.is_staff or account.is_superuser)
+            self.assertTrue(account.check_password('Demo-Test-Only-7291!'))
+            with self.assertRaises(CommandError):
+                call_command('create_demo_accounts',noinput=True)
