@@ -132,3 +132,30 @@ class ListingTests(TestCase):
         response=self.client.get(self.url('detail'))
         self.assertContains(response,'&lt;script&gt;')
         self.assertNotContains(response,'<script>alert(1)</script>')
+
+    def test_search_filters_preserve_role_visibility(self):
+        FoodListing.objects.create(donor=self.other, **self.data(name='Banana bread',category='BAKERY'))
+        self.client.force_login(self.recipient)
+        response=self.client.get(self.url('list'),{'q':'banana','category':'BAKERY','location':'hall'})
+        self.assertContains(response,'Banana bread');self.assertNotContains(response,'Vegetable meals')
+        self.client.force_login(self.donor)
+        self.assertNotContains(self.client.get(self.url('list'),{'q':'banana'}),'Banana bread')
+        response=self.client.get(self.url('list'),{'category':'INVALID'})
+        self.assertIn('category',response.context['filter_form'].errors)
+        self.assertEqual(response.context['page_obj'].paginator.count,0)
+
+    def test_pagination_keeps_filters(self):
+        for i in range(13):
+            FoodListing.objects.create(donor=self.donor, **self.data(name=f'Meal {i}'))
+        self.client.force_login(self.recipient)
+        response=self.client.get(self.url('list'),{'q':'Meal','page':2})
+        self.assertEqual(response.context['page_obj'].number,2)
+        self.assertContains(response,'q=Meal&amp;page=1')
+
+    def test_dashboard_counts_and_role_actions(self):
+        for user, route, text in [(self.donor,'donor_dashboard','Share food'),
+            (self.recipient,'recipient_dashboard','Browse food'),(self.admin,'admin_dashboard','Manage food listings')]:
+            self.client.force_login(user)
+            response=self.client.get(reverse(route))
+            self.assertContains(response,text)
+            self.assertContains(response,reverse('listings:list'))
