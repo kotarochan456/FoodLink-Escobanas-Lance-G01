@@ -1,10 +1,14 @@
-# FoodLink — Account Feature (Donor, Recipient and Admin)
+# FoodLink — PD2 Food Listing Management
 
-Full-stack Django: Python, Django templates, local HTML/CSS, and Supabase PostgreSQL. No React and no SQLite. Django handles authentication and sessions; Supabase is the database provider.
+Full-stack Django: Python, Django templates, Bootstrap 5.3.9 via CDN, local HTML/CSS and vanilla JavaScript, and Supabase PostgreSQL. No React and no SQLite. Django handles authentication and sessions; Supabase is the database provider.
 
 ## Already running the previous version?
 
-Follow **UPDATE_INSTRUCTIONS.md** from start to finish. Keep your original `.env` and `.venv`. Copy the four updated source folders, then run `python manage.py migrate` before starting the updated server. This update includes migration 0002.
+Follow **PD2_UPDATE_GUIDE.md** for the complete Windows update and GitHub PR workflow. Keep `.env`, `.venv`, `.git` and your existing database. This update adds `listings.0001_initial`; run migrations after updating. For older Member-role installations, role migration 0002 is also required.
+
+## Interface
+
+Hybrid glass accents and solid form/table surfaces, black-to-blue shading, responsive Bootstrap layout and a persistent dark/light toggle. The initial theme follows the device preference. Internet access is needed for CDN assets. No React or frontend build. Advanced Django administration uses the same color palette and toggle while retaining native controls.
 
 ## Implemented behavior
 
@@ -19,7 +23,25 @@ Follow **UPDATE_INSTRUCTIONS.md** from start to finish. Keep your original `.env
 - Pending and inactive accounts cannot be promoted through the role-management screen.
 - Ordinary promotion does not grant Django staff/superuser permissions. The bootstrap superuser retains advanced Django administration access.
 
-Food listing CRUD, food browsing/reservation, search, history and notifications remain later phases. Dashboards explain each role's planned responsibilities without claiming those modules are implemented.
+## Core feature: Food Listing Management
+
+Donors create, read, edit, complete and delete their own food listings through Django forms and templates. Recipients browse currently available, unexpired food and filter by name/description, category or pickup location. Admins review and modify all listings through the custom FoodLink UI, without needing Django staff access.
+
+`FoodListing.donor` is a ForeignKey to the existing User. The server assigns ownership from the session and never accepts a donor ID from a form. Another Donor receives 404 for records they do not own. Recipients cannot create, edit or delete, even by posting directly to a URL. Pending legacy users must first choose their account role.
+
+Required fields: name, description, category, positive whole-number quantity, unit, pickup location, availability time, expiry time and status. Expiry must follow availability; an available listing needs a future expiry. Scheduled, expired, completed and inactive-owner listings are hidden from Recipients. Owners and Admins retain access to manage them. Dates use Asia/Manila. Only POST with CSRF changes or deletes records; deletion has a confirmation page.
+
+Status values are Available and Completed / no longer available. “Scheduled” and “Expired” are derived from time. Completing a listing is a manual availability update, not proof of a reservation or collected donation. Reservation, collection tracking, notifications and donation history remain future increments.
+
+| Route | Purpose |
+|---|---|
+| `/food/` | Donor's own listings / Recipient available feed / Admin all listings |
+| `/food/new/` | Donor creates a listing |
+| `/food/<id>/` | Authorized detail view |
+| `/food/<id>/edit/` | Owner or Admin updates a listing |
+| `/food/<id>/delete/` | Owner or Admin confirms and deletes a listing |
+
+All roles reach the feature from their dashboard and the Food listings navigation link. `listings/models.py`, `forms.py`, `views.py`, `urls.py` and `templates/listings/` implement the full vertical slice. No SQLite or React is used.
 
 ## 1. Install Python on Windows
 
@@ -35,11 +57,10 @@ Extract the ZIP first. In VS Code open the `foodlink` folder containing `manage.
 py -m venv .venv
 .venv\Scripts\activate.bat
 python -m pip install -r requirements.txt
-copy .env.example .env
 python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"
 ```
 
-Copy the generated secret into `DJANGO_SECRET_KEY` in `.env`, enclosed in double quotes. For PowerShell, activate using `.venv\Scripts\Activate.ps1`; if execution policy blocks it, use Command Prompt instead. Select `.venv` as the Python interpreter in VS Code.
+For a NEW installation, create a file named `.env` beside `manage.py` and use the structure below. Copy the generated secret into `DJANGO_SECRET_KEY`, enclosed in double quotes. For an update, preserve your existing `.env`. For PowerShell, activate using `.venv\Scripts\Activate.ps1`; if execution policy blocks it, use Command Prompt instead. Select `.venv` as the Python interpreter in VS Code.
 
 ## 3. Set up Supabase
 
@@ -108,12 +129,12 @@ Safe checks without database mutations (requires a configured secret):
 
 ```bat
 python manage.py check
-python manage.py test accounts.test_without_database --verbosity 1
+python manage.py test accounts.test_without_database accounts.test_ui --verbosity 1
 ```
 
-The 22 database-independent tests check forms, roles, middleware, hashing, templates, CSRF and mocked database behavior. See VERIFICATION.md for the limits of these checks.
+The 30 database-independent tests check forms, roles, middleware, hashing, template rendering, UI controls, CSRF and mocked database behavior. Optional theme behavior checks use `node scripts/test_theme.cjs`; Node is not required to run FoodLink. The full PD2 suite contains 69 tests. See VERIFICATION.md for test evidence and limitations.
 
-Run the 23 database-backed tests ONLY against a separate disposable PostgreSQL server with a role permitted to create test databases. Never point the full suite at live Supabase. Django creates and drops a test database; pooler permissions may prevent that. One test explicitly applies and reverses the role migration within the disposable test database.
+Run database-backed tests ONLY against a separate disposable PostgreSQL server with a role permitted to create test databases. Never point the full suite at live Supabase. Django creates and drops a test database; pooler permissions may prevent that. One test explicitly applies and reverses the role migration within the disposable test database.
 
 Example Command Prompt configuration for your own disposable local PostgreSQL installation (create the empty `foodlink_test_source` database first):
 
@@ -124,7 +145,7 @@ set DB_NAME=foodlink_test_source
 set DB_USER=your_local_test_role
 set DB_PASSWORD=your_local_test_password
 set DB_SSLMODE=disable
-python manage.py test accounts --verbosity 2
+python manage.py test --verbosity 2
 ```
 
 Open a new terminal afterwards to return to `.env` Supabase settings. Environment variables override `.env`. Test databases use the public schema in isolated PostgreSQL; deployed Supabase tables use the private foodlink schema.
@@ -141,7 +162,10 @@ Open a new terminal afterwards to return to `.env` Supabase settings. Environmen
 - `accounts/migrations/0002_donor_recipient_roles.py`: preserves accounts, resets only legacy MEMBER role to NULL, updates role choices/constraint.
 - `config/settings.py`: environment settings, PostgreSQL and middleware.
 - `config/urls.py`: named routes.
-- `templates/` and `static/`: Django frontend and local CSS.
+- `accounts/templatetags/ui.py`: Bootstrap field rendering with accessible error descriptions.
+- `templates/` and `static/`: Django frontend, Bootstrap CDN includes, CSS and vanilla theme/navigation scripts.
+- `templates/admin/`: themed native Django administration.
+- `accounts/test_ui.py`: database-independent UI rendering tests.
 
 ## Troubleshooting
 
@@ -155,10 +179,18 @@ Open a new terminal afterwards to return to `.env` Supabase settings. Environmen
 
 ## Deployment scope
 
-This is a local course-development project. Configure your own database before use. No credentials or default passwords are included. Internet deployment requires HTTPS, a production server, `DEBUG=False`, explicit hosts, protected secrets and login rate limiting. Do not expose the `foodlink` schema through Supabase's Data API.
+This is a local course-development project. Configure your own database before use. No live database credentials or automatically created accounts are included. The report lists disposable test credentials used only in an isolated verification database; the optional `create_demo_accounts` command prompts for your own test password. Internet deployment requires HTTPS, a production server, `DEBUG=False`, explicit hosts, protected secrets and login rate limiting. Do not expose the `foodlink` schema through Supabase's Data API.
 
 Official references used for the original setup:
 - https://docs.djangoproject.com/en/5.2/releases/5.2/
 - https://docs.djangoproject.com/en/5.2/topics/auth/customizing/
 - https://docs.djangoproject.com/en/5.2/topics/auth/default/
 - https://supabase.com/docs/guides/database/connecting-to-postgres
+
+Bootstrap reference: https://getbootstrap.com/docs/5.3/getting-started/introduction/
+
+## PD2 report and GitHub workflow
+
+`docs/FoodLink-Escobanas-Lance-G01-PD2.pdf` and its editable Word copy preserve every section of the supplied completion template. They are preparation drafts until real PR links, browser screenshots, your test-account verification and submission date are filled in. Read `PD2_UPDATE_GUIDE.md` before publishing the increment. Two local feature branches are included in the delivery Git bundle; no remote PRs or merges are claimed.
+
+Main is unchanged in the delivered Git history. Push through feature PRs to develop, then a release PR into main. Keep merged feature branches. Do not submit until the final PDF and all changes are in main before your actual deadline.

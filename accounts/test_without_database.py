@@ -25,8 +25,12 @@ class NoDatabaseTests(SimpleTestCase):
                      'accounts/donor_dashboard.html','accounts/recipient_dashboard.html','accounts/admin_dashboard.html',
                      'accounts/choose_role.html','accounts/manage_roles.html','accounts/promote_member.html']:
             get_template(name)
-        for role,view in [('DONOR',views.donor_dashboard),('RECIPIENT',views.recipient_dashboard)]:
-            self.assertEqual(view(self.request_for(role)).status_code,200)
+        with patch('accounts.views.FoodListing.objects') as listings:
+            listings.filter.return_value.count.return_value = 0
+            listings.filter.return_value.available.return_value.count.return_value = 0
+            listings.available.return_value.count.return_value = 0
+            for role,view in [('DONOR',views.donor_dashboard),('RECIPIENT',views.recipient_dashboard)]:
+                self.assertEqual(view(self.request_for(role)).status_code,200)
 
     def test_public_pages_render(self):
         for name in ['login','register']:
