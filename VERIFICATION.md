@@ -1,18 +1,19 @@
-# Verification — Donor, Recipient and Admin update
+# Verification — Bootstrap hybrid UI update
 
-## Executed
+Passed in this workspace:
 
+- 30 database-independent Python tests: 22 existing account/role checks plus 8 UI rendering checks.
+- JavaScript theme checks using Node's standard library: initial device setting, saved preference priority, toggle behavior, refresh persistence, unavailable storage, invalid saved values, device preference changes, cross-tab updates and accessible button labels.
 - Django system checks: no issues.
-- 22 database-independent tests: passed.
-- Python compilation: passed.
-- Model vs migration comparison: no pending changes. Migration-history connectivity could not be verified here.
+- Model/migration comparison: no changes detected. The database migration-history connection was unavailable.
 
-These tests cover mandatory public role choices, forbidden ADMIN/MEMBER inputs, role-only routing, role isolation, profile field restrictions, mandatory-choice middleware, anonymous redirects, allowed logout/choice routes, conditional first-choice updates, CSRF, hashing, authentication logic, template compilation/rendering, conditional Admin promotion and audit calls. Database calls in these tests are mocked; they do not prove live PostgreSQL behavior.
+UI checks verify Bootstrap CDN includes, CSRF fields, required unselected public-role radios, preserved radio choice, form error associations, role-specific promotion links, dashboards/profiles/error templates and themed Django admin login. They are server-rendering checks, not browser screenshots.
 
-## Included but not executed here
+Bootstrap 5.3.9 CDN URLs and SRI values were taken from the official introduction documentation. The delivery includes no React dependencies, no frontend build and no account credential files.
 
-23 PostgreSQL integration tests exercise registration and storage, constraints, all dashboard role pairs, pending users and existing sessions, one-time choice, private profiles, CSRF, promotion and migration preservation. The migration test moves a disposable database from 0001 to 0002 and checks that Member identity/passwords survive and Admin accounts stay Admin.
+Not verified here:
 
-The workspace blocks local PostgreSQL socket creation. No SQLite substitution was used. Your Supabase connection is not available in this workspace. Run the manual checks in UPDATE_INSTRUCTIONS.md after migration; run the full automated suite only on disposable PostgreSQL.
+- Browser visual inspection: Chromium could not start because the workspace blocks its local socket creation.
+- 23 PostgreSQL integration tests: still included, not run here due to the same local socket restriction. Do not run these against the live Supabase project.
 
-Before this update, the user confirmed working Supabase connectivity, initial migrations, Admin creation, registration, username/email login, profiles, role isolation and logout in the original account system. The new three-role migration and flow still need validation on the local installation.
+The user has confirmed migration 0002 succeeded on their local Supabase-connected installation. This UI update adds no model changes or migrations. Existing registration, role selection, session authentication, private profiles and promotion authorization are retained. Use UPDATE_INSTRUCTIONS.md for local visual and workflow checks before submission.

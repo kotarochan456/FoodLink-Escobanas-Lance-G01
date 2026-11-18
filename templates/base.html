@@ -1,9 +1,25 @@
 {% load static %}<!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>{% block title %}FoodLink{% endblock %}</title><link rel="stylesheet" href="{% static 'style.css' %}"></head>
-<body><header><a class="brand" href="{% url 'dashboard' %}">FoodLink</a><nav aria-label="Main navigation">
-{% if user.is_authenticated %}{% if user.role %}<a href="{% url 'dashboard' %}">Dashboard</a><a href="{% url 'profile' %}">My profile</a>{% else %}<a href="{% url 'choose_role' %}">Choose account preference</a>{% endif %}
-<form method="post" action="{% url 'logout' %}">{% csrf_token %}<button>Log out</button></form>
-{% else %}<a href="{% url 'login' %}">Log in</a><a href="{% url 'register' %}">Register</a>{% endif %}</nav></header>
-<main>{% for message in messages %}<div class="message {{ message.tags }}" role="status">{{ message }}</div>{% endfor %}
-{% block content %}{% endblock %}</main><footer>FoodLink · Community food sharing · Account Feature</footer></body></html>
+<html lang="en" data-bs-theme="light"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light dark">
+<title>{% block title %}FoodLink · Share a little. Connect a lot.{% endblock %}</title>
+<script src="{% static 'theme.js' %}?v=4"></script>
+{% include 'includes/bootstrap_css.html' %}<link rel="stylesheet" href="{% static 'style.css' %}?v=4">
+{% include 'includes/bootstrap_js.html' %}<script src="{% static 'ui.js' %}?v=4" defer></script></head>
+<body>{% include 'includes/icons.html' %}<a class="skip-link" href="#main-content">Skip to content</a>
+<header class="site-header"><nav class="navbar navbar-expand-lg container app-container" aria-label="Main navigation">
+<a class="navbar-brand brand" href="{% url 'dashboard' %}"><span class="brand-mark">{% include 'includes/icon.html' with name='link' %}</span>Food<span class="brand-accent">Link</span></a>
+<div class="d-flex align-items-center gap-2 order-lg-last">{% include 'includes/theme_toggle.html' %}<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button></div>
+<div class="collapse navbar-collapse" id="mainNav"><ul class="navbar-nav ms-auto align-items-lg-center gap-lg-2 me-lg-3">
+{% if user.is_authenticated %}{% if user.role %}
+<li class="nav-item"><a class="nav-link {% if 'dashboard' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'dashboard' %}">{% include 'includes/icon.html' with name='grid' %} Dashboard</a></li>
+<li class="nav-item"><a class="nav-link" href="{% url 'listings:list' %}">Food listings</a></li>
+<li class="nav-item"><a class="nav-link {% if 'profile' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'profile' %}">{% include 'includes/icon.html' with name='user' %} My profile</a></li>
+{% else %}<li class="nav-item"><a class="nav-link active" href="{% url 'choose_role' %}">Choose account preference</a></li>{% endif %}
+<li class="nav-item"><form method="post" action="{% url 'logout' %}">{% csrf_token %}<button class="btn nav-link logout-button">{% include 'includes/icon.html' with name='exit' %} Log out</button></form></li>
+{% else %}<li class="nav-item"><a class="nav-link {% if request.resolver_match.url_name == 'login' %}active{% endif %}" href="{% url 'login' %}">Log in</a></li><li class="nav-item"><a class="btn btn-primary btn-sm" href="{% url 'register' %}">Join FoodLink {% include 'includes/icon.html' with name='arrow' %}</a></li>{% endif %}
+</ul></div></nav></header>
+<main id="main-content" class="container app-container main-content" tabindex="-1">
+{% for message in messages %}<div class="alert {% if message.tags == 'error' %}alert-danger{% elif message.tags %}alert-{{ message.tags }}{% else %}alert-info{% endif %} alert-dismissible fade show" role="status">{{ message }}<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Dismiss notification"></button></div>{% endfor %}
+{% block content %}{% endblock %}</main>
+<footer class="container app-container site-footer"><span class="footer-brand">FoodLink</span><span>A little sharing. A closer community.</span><span class="footer-note">Community food sharing</span></footer>
+<noscript><p class="container">JavaScript is disabled. Forms still work; use the navigation links below.</p><nav class="container" aria-label="Alternative navigation"><a href="{% url 'dashboard' %}">Dashboard</a> · <a href="{% url 'profile' %}">Profile</a> · <a href="{% url 'login' %}">Log in</a> · <a href="{% url 'register' %}">Register</a></nav></noscript>
+</body></html>

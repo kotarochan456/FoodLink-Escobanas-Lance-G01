@@ -1,17 +1,7 @@
-{% extends 'base.html' %}{% block content %}
-<h1>Manage user roles</h1>
-<p>Users choose Donor or Recipient during registration. Only an Admin can promote an active Donor or Recipient to Admin.</p>
-<p>Promoted Admins can access the Admin dashboard and promote other users.</p>
-{% for account in page_obj %}
-<section><h2>{{ account.username }}</h2><p>{{ account.get_full_name }}</p>
-<p>Role: <strong>{{ account.get_role_display|default:"Awaiting choice" }}</strong> · {% if account.is_active %}Active{% else %}Inactive{% endif %}</p>
-{% if account.role == 'DONOR' and account.is_active or account.role == 'RECIPIENT' and account.is_active %}
-<a href="{% url 'promote_user' account.pk %}">Make Admin</a>
-{% elif account.role == 'ADMIN' %}<p>Already an Admin</p>{% elif not account.role %}<p>This user must first sign in and choose Donor or Recipient.</p>{% else %}<p>Inactive accounts cannot be promoted.</p>{% endif %}
-</section>{% empty %}<p>No accounts found.</p>{% endfor %}
-<nav aria-label="Account pages">
-{% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}">Previous</a>{% endif %}
-<span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
-{% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}">Next</a>{% endif %}
-</nav><p><a href="{% url 'admin_dashboard' %}">Back to Admin dashboard</a></p>
-{% endblock %}
+{% extends 'base.html' %}{% block title %}Manage user roles · FoodLink{% endblock %}{% block content %}
+<a class="back-link" href="{% url 'admin_dashboard' %}">← Admin dashboard</a><div class="page-heading"><span class="eyebrow">PEOPLE &amp; PERMISSIONS</span><h1>Manage user roles</h1><p class="muted">Promote trusted, active Donors and Recipients to Admin.</p></div>
+<section class="panel table-panel"><div class="table-heading"><h2 class="h5 mb-1">Community accounts</h2><p class="small muted mb-0">{{ page_obj.paginator.count }} account{{ page_obj.paginator.count|pluralize }} · Promoted Admins can also promote others.</p></div>
+<div class="table-responsive"><table class="table align-middle mb-0"><caption class="visually-hidden">Community account roles and available promotion actions</caption><thead><tr><th scope="col">Account</th><th scope="col">Role</th><th scope="col">Status</th><th scope="col" class="text-end">Action</th></tr></thead><tbody>
+{% for account in page_obj %}<tr><td><div class="d-flex align-items-center gap-3"><span class="avatar avatar-small" aria-hidden="true">{{ account.first_name|first|upper }}</span><div><strong class="account-name">{{ account.get_full_name }}</strong><span class="d-block muted small">@{{ account.username }}</span></div></div></td><td><span class="role-badge small-badge">{{ account.get_role_display|default:'Awaiting choice' }}</span></td><td><span class="status-badge {% if account.is_active %}status-active{% endif %}">{% if account.is_active %}Active{% else %}Inactive{% endif %}</span></td><td class="text-end">
+{% if account.role == 'DONOR' and account.is_active or account.role == 'RECIPIENT' and account.is_active %}<a class="btn btn-outline-primary btn-sm text-nowrap" href="{% url 'promote_user' account.pk %}" aria-label="Make {{ account.username }} an Admin">Make Admin</a>{% elif account.role == 'ADMIN' %}<span class="small muted">Already an Admin</span>{% elif not account.role %}<span class="small muted">Must choose a role first</span>{% else %}<span class="small muted">Account inactive</span>{% endif %}</td></tr>{% empty %}<tr><td colspan="4" class="text-center p-5 muted">No accounts found.</td></tr>{% endfor %}</tbody></table></div>
+<div class="table-footer d-flex flex-wrap align-items-center justify-content-between gap-3"><span class="small muted">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span><nav aria-label="Account pages"><ul class="pagination pagination-sm mb-0"><li class="page-item {% if not page_obj.has_previous %}disabled{% endif %}">{% if page_obj.has_previous %}<a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>{% else %}<span class="page-link">Previous</span>{% endif %}</li><li class="page-item active" aria-current="page"><span class="page-link">{{ page_obj.number }}</span></li><li class="page-item {% if not page_obj.has_next %}disabled{% endif %}">{% if page_obj.has_next %}<a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>{% else %}<span class="page-link">Next</span>{% endif %}</li></ul></nav></div></section>{% endblock %}
